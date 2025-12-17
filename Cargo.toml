@@ -12,3 +12,16 @@ tower = "0.5.2"
 tower-http = { version = "0.6.8", features = ["trace"] }  
 tracing = "0.1.43"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
+
+sea-orm = { version = "0.12", features = [
+    "sqlx-mysql",
+    "runtime-tokio-native-tls",
+    "macros",
+    "with-chrono",
+] }
+chrono = { version = "0.4", features = ["serde"] }
+
+
+sea-orm-migration = { version = "0.12", features = ["runtime-tokio-native-tls"] }
+
+dotenv = "0.15"

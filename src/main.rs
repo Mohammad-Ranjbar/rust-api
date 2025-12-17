@@ -13,14 +13,13 @@ struct Message {
 
 #[tokio::main]
 async fn main() {
-    // Initialize tracing
+  
     tracing_subscriber::fmt::init();
 
-    // Build our application with middleware
     let app = Router::new()
         .route("/", get(root_handler))
         .route("/shopw", get(shopw_handler))
-        .layer(TraceLayer::new_for_http());  // افزودن logging
+        .layer(TraceLayer::new_for_http()); 
 
     // Run it
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
