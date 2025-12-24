@@ -15,12 +15,10 @@ pub async fn store(
     State(db): State<Db>,
     Json(payload): Json<CreateUserRequest>,
 ) -> impl IntoResponse {
-    // Validate request
     if payload.validate().is_err() {
         return StatusCode::UNPROCESSABLE_ENTITY.into_response();
     }
 
-    // Create model
     let user = user::ActiveModel {
         title: Set(payload.title),
         text: Set(payload.text),
@@ -30,6 +28,9 @@ pub async fn store(
     // Insert into DB
     match user.insert(&db).await {
         Ok(model) => (StatusCode::CREATED, Json(model)).into_response(),
-        Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        Err(err) => {
+            tracing::error!("db error: {:?}", err);
+            StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        }
     }
 }
