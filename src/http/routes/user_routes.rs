@@ -11,5 +11,5 @@ pub fn routes() -> Router<Db> {
             "/users",
             post(user_controller::store).get(user_controller::index),
         )
-        .route("/users/{id}", get(user_controller::show))
+        .route("/users/{id}", get(user_controller::show).put(user_controller::update).delete(user_controller::delete))
 }

@@ -8,7 +8,7 @@ use sea_orm::{ActiveModelTrait, Set,EntityTrait,QueryOrder};
 use validator::Validate;
 use crate::db::Db;
 use crate::entity::user;
-use crate::http::requests::user_request::CreateUserRequest;
+use crate::http::requests::user_request::{CreateUserRequest,UpdateUserRequest};
 use crate::http::responses::user_response::UserResponse;
 use crate::http::errors::api_error::ApiError;
 use crate::http::helpers::parse::parse_id;
@@ -37,7 +37,40 @@ pub async fn store(
     Ok(Json(model.into()))
 }
 
+pub async fn update(
+    State(db): State<Db>,
+    Path(id): Path<String>,
+    Json(payload): Json<UpdateUserRequest>,
+) -> Result<Json<UserResponse>, ApiError> {
 
+    payload
+        .validate()
+        .map_err(|_| ApiError::UnprocessableEntity("Invalid data".to_string()))?;
+
+    let id = parse_id(&id)?;
+
+    let model = user::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|_| ApiError::internal(None))?
+        .ok_or_else(|| ApiError::NotFound("User not available".to_string()))?;
+
+    let mut active: user::ActiveModel = model.into();
+
+    active.title = Set(payload.title);
+
+    if let Some(text) = payload.text {
+        active.text = Set(Some(text));
+    }
+
+    // save
+    let updated = active
+        .update(&db)
+        .await
+        .map_err(|_| ApiError::internal(None))?;
+
+    Ok(Json(updated.into()))
+}
 
 pub async fn index(
     State(db): State<Db>,
@@ -69,5 +102,25 @@ pub async fn show(
 
     let model = model.ok_or_else(|| ApiError::NotFound("User not available".to_string()))?;
 
+    Ok(Json(model.into()))
+}
+
+pub async fn delete(
+    State(db): State<Db>,
+    Path(id): Path<String>,
+) -> Result<Json<UserResponse>, ApiError> {
+    let id = parse_id(&id)?;
+
+    let model = user::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|_| ApiError::internal(None))?;
+
+    let model = model.ok_or_else(|| ApiError::NotFound("User not available".to_string()))?;
+    
+    let active:user::ActiveModel = model.clone().into();
+    
+    active.delete(&db).await.map_err(|_| ApiError::internal(None))?;
+    
     Ok(Json(model.into()))
 }

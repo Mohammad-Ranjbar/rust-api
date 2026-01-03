@@ -9,3 +9,11 @@ pub struct CreateUserRequest {
     #[validate(length(max = 500))]
     pub text: Option<String>,
 }
+#[derive(Debug, Deserialize, Validate)]
+pub struct UpdateUserRequest {
+    #[validate(length(min = 3))]
+    pub title: String,
+
+    #[validate(length(max = 500))]
+    pub text: Option<String>,
+}
