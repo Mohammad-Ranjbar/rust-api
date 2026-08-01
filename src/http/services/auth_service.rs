@@ -4,8 +4,8 @@ use sha2::{Sha256, Digest};
 use base64::Engine;
 use crate::http::types::session::{SessionInfo, IssuedTokens};
 use jsonwebtoken::{encode, decode, Header, Validation, EncodingKey, DecodingKey};
-use rand::rngs::OsRng;
-use rand::TryRngCore;
+use rand::rngs::SysRng;
+use rand::TryRng;
 use base64::engine::general_purpose::STANDARD;
 
 #[derive(Clone, Debug)]
@@ -62,7 +62,7 @@ impl AuthService {
 
     pub fn generate_refresh_token(&self) -> String {
         let mut bytes = [0u8; 64];
-        let mut rng = OsRng;
+        let mut rng = SysRng;
 
         rng.try_fill_bytes(&mut bytes).unwrap();
 
